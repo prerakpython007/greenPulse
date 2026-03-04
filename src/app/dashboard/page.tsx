@@ -72,9 +72,9 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, []);
 
-  // Check board connection status
+  // Check board connection status — immediately and every 5 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
+    const checkConnection = () => {
       if (heartbeat) {
         const now = Date.now();
         const lastSeen = heartbeat.lastSeen;
@@ -87,7 +87,10 @@ export default function DashboardPage() {
           setTimeout(() => setShowConnectedMessage(false), 3000);
         }
       }
-    }, 5000);
+    };
+
+    checkConnection(); // Check immediately when heartbeat updates
+    const interval = setInterval(checkConnection, 5000);
     return () => clearInterval(interval);
   }, [heartbeat, boardConnected]);
 
@@ -226,7 +229,7 @@ export default function DashboardPage() {
                       : "N/A"}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {!boardConnected && "Last reading before disconnect"}
+                    {!boardConnected && latestData && "Last reading before disconnect"}
                   </p>
                 </CardContent>
               </Card>
@@ -245,7 +248,7 @@ export default function DashboardPage() {
                       : "N/A"}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {!boardConnected && "Last reading before disconnect"}
+                    {!boardConnected && latestData && "Last reading before disconnect"}
                   </p>
                 </CardContent>
               </Card>
@@ -264,7 +267,7 @@ export default function DashboardPage() {
                       : "N/A"}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {!boardConnected && "Last reading before disconnect"}
+                    {!boardConnected && latestData && "Last reading before disconnect"}
                   </p>
                 </CardContent>
               </Card>
