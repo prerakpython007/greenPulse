@@ -59,7 +59,7 @@ interface Heartbeat {
 // Calculate overall plant health score (0-100)
 function getHealthScore(data: SensorData): { score: number; breakdown: { temp: number; hum: number; moist: number } } {
   const scoreFor = (val: number | null, ideal: number, okRange: number, maxRange: number) => {
-    if (val === null) return 50;
+    if (val === null || isNaN(val)) return 50;
     const dist = Math.abs(val - ideal);
     if (dist <= okRange) return 100;
     if (dist >= maxRange) return 0;
@@ -70,8 +70,13 @@ function getHealthScore(data: SensorData): { score: number; breakdown: { temp: n
   const hum = scoreFor(data.humidity, 55, 15, 40);
   const moist = scoreFor(data.moisture, 55, 15, 40);
 
-  const score = Math.round(temp * 0.3 + hum * 0.3 + moist * 0.4);
-  return { score, breakdown: { temp, hum, moist } };
+  // Use weighted average but cap by worst sensor — if any sensor is bad, score drops hard
+  const weighted = Math.round(temp * 0.3 + hum * 0.3 + moist * 0.4);
+  const worst = Math.min(temp, hum, moist);
+  // Blend: 40% weighted avg + 60% worst sensor — bad sensor dominates
+  const raw = Math.round(weighted * 0.4 + worst * 0.6);
+  const score = isNaN(raw) ? 0 : Math.max(0, Math.min(100, raw));
+  return { score, breakdown: { temp: isNaN(temp) ? 0 : temp, hum: isNaN(hum) ? 0 : hum, moist: isNaN(moist) ? 0 : moist } };
 }
 
 function getHealthLabel(score: number): { label: string; color: string } {
@@ -85,17 +90,21 @@ function getHealthLabel(score: number): { label: string; color: string } {
 function getPlantMood(data: SensorData): { label: string; message: string; color: string; bg: string; emoji: string } {
   const { temperature: t, humidity: h, moisture: m } = data;
   if (t === null && h === null && m === null) return { label: "Unknown", message: "No sensor data", color: "text-gray-500", bg: "bg-gray-50", emoji: "🌫️" };
+
+  const { score } = getHealthScore(data);
+
+  // Critical conditions first
   if (m !== null && m < 15) return { label: "Dying of Thirst!", message: "Water immediately!", color: "text-red-600", bg: "bg-red-50", emoji: "🥀" };
   if (t !== null && t > 40) return { label: "Overheating!", message: "Move to shade!", color: "text-red-600", bg: "bg-red-50", emoji: "🥵" };
   if (t !== null && t < 8) return { label: "Freezing!", message: "Bring indoors!", color: "text-blue-600", bg: "bg-blue-50", emoji: "🥶" };
-  if (m !== null && m < 30) return { label: "Thirsty", message: "Time to water", color: "text-amber-600", bg: "bg-amber-50", emoji: "🥤" };
   if (m !== null && m > 85) return { label: "Drowning!", message: "Too much water", color: "text-blue-600", bg: "bg-blue-50", emoji: "🌊" };
-  if (h !== null && h < 25) return { label: "Dry Air", message: "Consider misting", color: "text-amber-600", bg: "bg-amber-50", emoji: "🌫️" };
-  if (h !== null && h > 85) return { label: "Too Humid", message: "Watch for fungus", color: "text-blue-600", bg: "bg-blue-50", emoji: "☁️" };
-  if (t !== null && t > 35) return { label: "A Bit Warm", message: "Keep an eye on it", color: "text-orange-600", bg: "bg-orange-50", emoji: "☀️" };
-  if (t !== null && t < 12) return { label: "Chilly", message: "Prefers warmer", color: "text-sky-600", bg: "bg-sky-50", emoji: "⛄" };
-  if (m !== null && m < 40) return { label: "Okay-ish", message: "Water soon", color: "text-yellow-600", bg: "bg-yellow-50", emoji: "😐" };
-  return { label: "Thriving!", message: "Happy and healthy!", color: "text-emerald-600", bg: "bg-emerald-50", emoji: "🌿" };
+
+  // Score-based moods using all 3 sensors combined
+  if (score >= 80) return { label: "Happy", message: "Thriving in perfect conditions!", color: "text-emerald-600", bg: "bg-emerald-50", emoji: "😊" };
+  if (score >= 60) return { label: "Neutral", message: "Doing okay, could be better", color: "text-yellow-600", bg: "bg-yellow-50", emoji: "😐" };
+  if (score >= 40) return { label: "Lazy", message: "Needs some attention", color: "text-orange-600", bg: "bg-orange-50", emoji: "😴" };
+  if (score >= 20) return { label: "Sad", message: "Not feeling great at all", color: "text-red-600", bg: "bg-red-50", emoji: "😢" };
+  return { label: "Critical", message: "Needs urgent care!", color: "text-red-700", bg: "bg-red-100", emoji: "😭" };
 }
 
 // Multi-segment donut chart
@@ -301,7 +310,62 @@ export default function DashboardPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-20 overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 ml-20 overflow-y-auto overflow-x-hidden relative">
+        {/* Scattered leaf background */}
+        <div className="fixed inset-0 ml-20 pointer-events-none overflow-hidden z-0">
+          {[
+            { top: "1%", left: "5%", size: 100, rotate: -25, opacity: 0.15 },
+            { top: "3%", left: "42%", size: 80, rotate: -80, opacity: 0.13 },
+            { top: "2%", left: "78%", size: 110, rotate: 35, opacity: 0.14 },
+            { top: "10%", left: "20%", size: 70, rotate: 145, opacity: 0.12 },
+            { top: "12%", left: "60%", size: 95, rotate: -40, opacity: 0.13 },
+            { top: "10%", left: "90%", size: 65, rotate: 15, opacity: 0.14 },
+            { top: "20%", left: "8%", size: 85, rotate: 200, opacity: 0.13 },
+            { top: "22%", left: "48%", size: 60, rotate: -155, opacity: 0.12 },
+            { top: "20%", left: "82%", size: 90, rotate: 70, opacity: 0.14 },
+            { top: "30%", left: "2%", size: 75, rotate: 130, opacity: 0.15 },
+            { top: "28%", left: "35%", size: 105, rotate: -110, opacity: 0.12 },
+            { top: "32%", left: "68%", size: 70, rotate: 250, opacity: 0.13 },
+            { top: "30%", left: "92%", size: 80, rotate: -20, opacity: 0.14 },
+            { top: "40%", left: "15%", size: 90, rotate: 85, opacity: 0.13 },
+            { top: "42%", left: "52%", size: 75, rotate: -170, opacity: 0.12 },
+            { top: "40%", left: "85%", size: 100, rotate: 40, opacity: 0.15 },
+            { top: "50%", left: "5%", size: 85, rotate: -60, opacity: 0.14 },
+            { top: "48%", left: "38%", size: 65, rotate: 160, opacity: 0.12 },
+            { top: "52%", left: "72%", size: 95, rotate: -130, opacity: 0.13 },
+            { top: "55%", left: "95%", size: 70, rotate: 100, opacity: 0.14 },
+            { top: "60%", left: "12%", size: 110, rotate: -45, opacity: 0.15 },
+            { top: "62%", left: "55%", size: 80, rotate: 210, opacity: 0.12 },
+            { top: "60%", left: "88%", size: 75, rotate: -90, opacity: 0.13 },
+            { top: "70%", left: "3%", size: 90, rotate: 175, opacity: 0.14 },
+            { top: "68%", left: "30%", size: 100, rotate: -15, opacity: 0.13 },
+            { top: "72%", left: "65%", size: 70, rotate: 120, opacity: 0.15 },
+            { top: "70%", left: "90%", size: 85, rotate: -140, opacity: 0.12 },
+            { top: "80%", left: "18%", size: 75, rotate: 55, opacity: 0.14 },
+            { top: "78%", left: "50%", size: 95, rotate: -75, opacity: 0.13 },
+            { top: "82%", left: "80%", size: 65, rotate: 190, opacity: 0.15 },
+            { top: "88%", left: "8%", size: 100, rotate: -35, opacity: 0.13 },
+            { top: "90%", left: "42%", size: 85, rotate: 140, opacity: 0.14 },
+            { top: "92%", left: "70%", size: 90, rotate: -100, opacity: 0.12 },
+            { top: "95%", left: "25%", size: 70, rotate: 230, opacity: 0.15 },
+            { top: "96%", left: "58%", size: 80, rotate: -50, opacity: 0.13 },
+          ].map((leaf, i) => (
+            <img
+              key={i}
+              src="/bg.png"
+              alt=""
+              className="absolute"
+              style={{
+                top: leaf.top,
+                left: leaf.left,
+                width: leaf.size,
+                height: leaf.size,
+                opacity: leaf.opacity,
+                transform: `rotate(${leaf.rotate}deg)`,
+              }}
+            />
+          ))}
+        </div>
         {/* Board Connected Toast */}
         {showConnectedMessage && (
           <div className="m-6 mb-0 bg-emerald-500 text-white rounded-2xl p-4 flex items-center justify-center gap-3 animate-in slide-in-from-top duration-300">
@@ -334,12 +398,12 @@ export default function DashboardPage() {
 
         {/* Dashboard Content */}
         {latestData && (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 relative z-10">
             {/* Top Header Section */}
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h1 className="text-2xl font-black text-gray-900 tracking-tight">Dashboard Overview</h1>
-                <p className="text-sm text-gray-400 font-medium">Welcome back, {user?.displayName || "Stanton"}</p>
+                <p className="text-sm text-gray-400 font-medium">Welcome back, {user?.displayName || user?.email?.split("@")[0] || "User"}</p>
               </div>
 
               {/* Profile Bar */}
@@ -398,19 +462,17 @@ export default function DashboardPage() {
 
                 const now = Date.now();
                 const healthRateMs = healthRateTab === "1H" ? 3600000 : healthRateTab === "24H" ? 86400000 : 604800000;
+                const maxBars = healthRateTab === "1H" ? 8 : healthRateTab === "24H" ? 12 : 8;
                 const filteredHealth = historyData.filter((d) => now - d.timestamp < healthRateMs);
-                const recentData = filteredHealth.length > 0
-                  ? (healthRateTab === "7D"
-                    ? filteredHealth.filter((_, i) => i % Math.max(1, Math.floor(filteredHealth.length / 12)) === 0).slice(-12)
-                    : filteredHealth.slice(-20))
-                  : historyData.slice(-10);
+                const recentData = (filteredHealth.length > 0 ? filteredHealth : historyData).slice(-maxBars);
 
                 const growthPoints = recentData.map((d, i) => {
-                  const { score: s } = getHealthScore(d);
+                  const { score: s, breakdown: b } = getHealthScore(d);
+                  const safeScore = isNaN(s) ? 0 : s;
                   const timeLabel = healthRateTab === "7D"
                     ? new Date(d.timestamp).toLocaleDateString([], { weekday: "short" })
                     : new Date(d.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                  return { idx: i, score: s, time: timeLabel };
+                  return { idx: i, score: safeScore, healthy: safeScore, unhealthy: 100 - safeScore, time: timeLabel };
                 });
 
                 return (
@@ -442,7 +504,7 @@ export default function DashboardPage() {
                               {new Date(latestData.timestamp).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })}
                             </p>
                             <div className="mt-6">
-                              <span className={`text-8xl font-extrabold ${latestData.temperature !== null
+                              <span className={`text-8xl font-extrabold ${latestData.temperature !== null && !isNaN(latestData.temperature)
                                 ? latestData.temperature >= 38 ? "text-red-500"
                                   : latestData.temperature >= 28 ? "text-orange-500"
                                     : latestData.temperature >= 18 ? "text-emerald-500"
@@ -450,7 +512,7 @@ export default function DashboardPage() {
                                         : "text-blue-500"
                                 : "text-gray-900"
                                 }`}>
-                                {latestData.temperature !== null ? `${latestData.temperature}°` : "—"}
+                                {latestData.temperature !== null && !isNaN(latestData.temperature) ? `${latestData.temperature}°` : "—"}
                               </span>
                               <span className="text-2xl text-gray-400 font-medium ml-1">C</span>
                             </div>
@@ -459,28 +521,32 @@ export default function DashboardPage() {
                             <MultiSegmentRing
                               size={210}
                               segments={[
-                                { score: breakdown.temp, color: "#ef4444", trackColor: "#fecaca" },
-                                { score: breakdown.hum, color: "#3b82f6", trackColor: "#bfdbfe" },
-                                { score: breakdown.moist, color: "#10b981", trackColor: "#a7f3d0" },
+                                { score: Math.min(100, Math.max(0, ((latestData.temperature ?? 0) / 50) * 100)), color: "#bef264", trackColor: "rgba(190,242,100,0.1)" }, // Temp: 0-50°C mapped to 0-100%
+                                { score: Math.min(100, Math.max(0, latestData.humidity ?? 0)), color: "#4ade80", trackColor: "rgba(74,222,128,0.1)" },  // Humidity: already 0-100%
+                                { score: Math.min(100, Math.max(0, latestData.moisture ?? 0)), color: "#166534", trackColor: "rgba(22,101,52,0.1)" }, // Moisture: already 0-100%
                               ]}
                             />
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className={`text-4xl font-extrabold ${healthColor}`}>{score}%</span>
-                              <span className="text-sm font-medium text-gray-400">Health</span>
+                              <span className="text-5xl font-[1000] text-lime-500 tracking-tighter">{score}%</span>
+                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Health</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-center gap-12 mt-auto pt-6 border-t border-gray-50">
                           {[
-                            { icon: Thermometer, value: latestData.temperature, unit: "°C", color: "text-red-500" },
-                            { icon: Droplets, value: latestData.humidity, unit: "%", color: "text-blue-500" },
-                            { icon: Sprout, value: latestData.moisture, unit: "%", color: "text-emerald-500" },
+                            { icon: Thermometer, value: latestData.temperature, unit: "°C", color: "text-lime-500", bg: "bg-lime-50" },
+                            { icon: Droplets, value: latestData.humidity, unit: "%", color: "text-emerald-500", bg: "bg-emerald-50" },
+                            { icon: Sprout, value: latestData.moisture, unit: "%", color: "text-green-600", bg: "bg-green-50" },
                           ].map((s, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                              <s.icon className={`w-7 h-7 ${s.color} shrink-0`} strokeWidth={2.5} />
-                              <span className="text-2xl font-extrabold text-gray-800 leading-none">
-                                {s.value !== null ? `${s.value}${s.unit}` : "—"}
-                              </span>
+                            <div key={i} className="flex items-center gap-3 group/stat">
+                              <div className={`w-10 h-10 rounded-2xl ${s.bg} flex items-center justify-center group-hover/stat:scale-110 transition-transform`}>
+                                <s.icon className={`w-5 h-5 ${s.color}`} strokeWidth={3} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-2xl font-black text-gray-900 leading-none">
+                                  {s.value !== null && !isNaN(s.value) ? `${s.value}${s.unit}` : "—"}
+                                </span>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -510,11 +576,11 @@ export default function DashboardPage() {
                         <div className="flex-1 h-[160px] relative">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                              data={growthPoints.map(p => ({ ...p, base: p.score * 0.5, peak: p.score * 0.5 }))}
+                              data={growthPoints}
                               margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                               barGap={0}
                             >
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" />
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                               <XAxis
                                 dataKey="time"
                                 axisLine={false}
@@ -528,29 +594,32 @@ export default function DashboardPage() {
                                 tickLine={false}
                                 tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }}
                               />
+                              {/* Moisture (bottom) — largest weight 40% */}
+                              {/* Healthy portion (lime green) — bottom */}
                               <Bar
-                                dataKey="base"
+                                dataKey="healthy"
                                 stackId="health"
                                 fill="#bef264"
-                                radius={[0, 0, 12, 12]}
-                                barSize={18}
+                                radius={[0, 0, 10, 10]}
+                                barSize={22}
                               />
+                              {/* Unhealthy portion (dark green) — top */}
                               <Bar
-                                dataKey="peak"
+                                dataKey="unhealthy"
                                 stackId="health"
                                 fill="#166534"
-                                radius={[12, 12, 0, 0]}
-                                barSize={18}
+                                radius={[10, 10, 0, 0]}
+                                barSize={22}
                               />
                               <Tooltip
                                 cursor={{ fill: '#f8fafc', radius: 12 }}
                                 content={({ active, payload }) => {
                                   if (active && payload && payload.length) {
-                                    const total = payload.reduce((acc, entry) => acc + (entry.value as number), 0);
+                                    const healthy = payload.find(p => p.dataKey === "healthy")?.value as number || 0;
                                     return (
                                       <div className="bg-[#1a2e05] text-white rounded-lg px-2.5 py-1.5 text-[10px] font-black shadow-2xl border border-white/10">
-                                        <p className="opacity-50 text-[8px] uppercase tracking-widest mb-0.5">Health Grade</p>
-                                        <p className="text-sm">{total.toFixed(0)}%</p>
+                                        <p className="opacity-50 text-[8px] uppercase tracking-widest mb-0.5">Health</p>
+                                        <p className="text-sm">{healthy.toFixed(0)}%</p>
                                       </div>
                                     );
                                   }
@@ -569,15 +638,15 @@ export default function DashboardPage() {
 
                     {/* Plant Mood Card (Top Right) — Independent Height layout */}
                     <div className="relative flex flex-col pt-48">
-                      <Card className="bg-[#edf7ee]/95 backdrop-blur-sm border-2 border-white shadow-xl shadow-black/5 rounded-[3rem] overflow-visible mt-auto h-[230px] flex flex-col relative group/card hover:shadow-2xl transition-all duration-700">
+                      <Card className="bg-[#1a2e05] backdrop-blur-sm border-2 border-white/5 shadow-2xl shadow-black/20 rounded-[3rem] overflow-visible mt-auto h-[230px] flex flex-col relative group/card hover:shadow-2xl transition-all duration-700">
                         {/* Decorative internal glow */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-lime-400/10 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
 
                         <CardContent className="p-0 flex flex-col items-center flex-1 relative z-10 w-full">
                           {/* Depth Layer — Multi-glow behind plant */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-64 h-64 bg-lime-300/[0.08] blur-[80px] rounded-full animate-pulse" />
-                            <div className="w-48 h-48 bg-emerald-200/[0.1] blur-[60px] rounded-full" />
+                            <div className="w-64 h-64 bg-lime-400/[0.15] blur-[80px] rounded-full animate-pulse" />
+                            <div className="w-48 h-48 bg-emerald-400/[0.1] blur-[60px] rounded-full" />
                           </div>
 
                           {/* Overlapping Plant — Balanced overlap */}
@@ -587,22 +656,22 @@ export default function DashboardPage() {
                               alt="Plant"
                               width={500}
                               height={500}
-                              className="object-contain animate-in zoom-in duration-1000 select-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.1)]"
+                              className="object-contain animate-in zoom-in duration-1000 select-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
                             />
                           </div>
 
                           {/* Status Container — Sleek Floating Pill */}
                           <div className="w-full mt-auto mb-8 px-8 relative z-20 group">
-                            <div className="bg-white/20 backdrop-blur-3xl px-5 py-3 rounded-full border border-white/40 shadow-lg flex items-center justify-between relative overflow-hidden group-hover:bg-white/30 hover:scale-[1.02] transition-all duration-500">
+                            <div className="bg-white/10 backdrop-blur-xl px-5 py-3 rounded-full border border-white/10 shadow-lg flex items-center justify-between relative overflow-hidden group-hover:bg-white/20 hover:scale-[1.02] transition-all duration-500">
                               <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2">
                                   <span className="text-xl">{mood.emoji}</span>
-                                  <h2 className={`text-lg font-black uppercase tracking-tighter ${mood.color} antialiased leading-none`}>{mood.label}</h2>
+                                  <h2 className={`text-lg font-black uppercase tracking-tighter text-white antialiased leading-none`}>{mood.label}</h2>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <div className="w-px h-3 bg-gray-900/10" />
-                                <p className="text-[8px] font-bold text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap leading-none">{mood.message}</p>
+                                <div className="w-px h-3 bg-white/20" />
+                                <p className="text-[8px] font-bold text-white/50 uppercase tracking-[0.3em] whitespace-nowrap leading-none">{mood.message}</p>
                               </div>
                             </div>
                           </div>
@@ -726,94 +795,80 @@ export default function DashboardPage() {
                   </div>
                 </Card>
 
-                {/* Quick Stats Card (Bottom Right) */}
+                {/* Health Score Trend Card (Bottom Right) */}
                 <div className="lg:col-span-1">
                   {latestData && (() => {
-                    const { score } = getHealthScore(latestData);
-                    const healthScores = historyData.slice(-12).map(d => getHealthScore(d).score);
-                    const avgStability = 100 - Math.min(100, Math.max(0,
-                      (Math.abs((latestData.temperature || 0) - (historyData[historyData.length - 2]?.temperature || 0)) * 5) +
-                      (Math.abs((latestData.moisture || 0) - (historyData[historyData.length - 2]?.moisture || 0)) * 2)
-                    ));
-                    const scoreTrend = healthScores.length > 1 ? healthScores[healthScores.length - 1] - healthScores[0] : 0;
-                    const avgTemp = historyData.length > 0
-                      ? (historyData.reduce((a, d) => a + (d.temperature ?? 0), 0) / historyData.length).toFixed(1)
-                      : latestData.temperature?.toFixed(1) ?? "—";
-                    const avgMoist = historyData.length > 0
-                      ? (historyData.reduce((a, d) => a + (d.moisture ?? 0), 0) / historyData.length).toFixed(1)
-                      : latestData.moisture?.toFixed(1) ?? "—";
-                    const maxTemp = historyData.length > 0
-                      ? Math.max(...historyData.map((d) => d.temperature ?? 0)).toFixed(1)
-                      : latestData.temperature?.toFixed(1) ?? "—";
+                    const trendData = historyData.slice(-8).map((d, i) => {
+                      const s = getHealthScore(d).score;
+                      const time = new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      return { score: isNaN(s) ? 0 : s, time, id: i + 1 };
+                    });
+                    const currentScore = getHealthScore(latestData).score;
+                    const firstScore = trendData.length > 1 ? trendData[0].score : currentScore;
+                    const trend = currentScore - firstScore;
 
                     return (
-                      <Card className="bg-[#1a2e05] border-none shadow-2xl rounded-[3.5rem] overflow-hidden flex flex-col h-full group">
-                        {/* Header Section — NOW AT THE TOP (Single Line) */}
+                      <Card className="bg-[#1a2e05] border-none shadow-2xl rounded-[3.5rem] overflow-hidden flex flex-col group h-full">
                         <div className="px-6 pt-5 pb-0 flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-xl bg-lime-400 flex items-center justify-center text-[#1a2e05] shadow-lg shadow-lime-400/20">
-                              <Activity className="w-4 h-4 animate-pulse" />
+                              <TrendingUp className="w-4 h-4" />
                             </div>
-                            <h3 className="text-base font-black text-white tracking-tighter leading-none">Environmental Pulse</h3>
+                            <h3 className="text-base font-black text-white tracking-tighter leading-none">Health Trend</h3>
                           </div>
-                          <div className="bg-white/10 backdrop-blur-md rounded-full px-2.5 py-0.5 border border-white/5">
-                            <span className="text-[8px] font-black text-lime-400 uppercase tracking-widest">Live Momentum</span>
+                          <div className={`backdrop-blur-md rounded-full px-2.5 py-0.5 border border-white/5 ${trend >= 0 ? 'bg-lime-400/15' : 'bg-red-400/15'}`}>
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${trend >= 0 ? 'text-lime-400' : 'text-red-400'}`}>
+                              {trend >= 0 ? `+${trend}` : trend} pts
+                            </span>
                           </div>
                         </div>
 
-                        {/* 'Blobby Momentum' Pulse — Re-engineered for Pure Aesthetics */}
                         <div className="flex-1 px-4 pt-4 mt-1">
                           <div className="h-[160px] w-full relative">
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart
-                                data={historyData.slice(-8).map((d, i) => ({
-                                  momentum: (getHealthScore(d).score + (d.temperature || 0) + (d.humidity || 0) + (d.moisture || 0)) / 4,
-                                  id: i + 1
-                                }))}
-                                margin={{ top: 30, right: 10, left: -20, bottom: 0 }}
+                                data={trendData}
+                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                               >
                                 <defs>
-                                  <linearGradient id="blobGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#bef264" />
-                                    <stop offset="50%" stopColor="#22c55e" />
-                                    <stop offset="100%" stopColor="#1a2e05" />
+                                  <linearGradient id="healthTrendGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor={trend >= 0 ? "#bef264" : "#f87171"} stopOpacity={0.6} />
+                                    <stop offset="100%" stopColor="#1a2e05" stopOpacity={0} />
                                   </linearGradient>
-                                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feGaussianBlur stdDeviation="3" result="blur" />
-                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                                  </filter>
                                 </defs>
                                 <CartesianGrid strokeDasharray="0" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                <XAxis dataKey="time" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
+                                <YAxis domain={[0, 100]} tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                  contentStyle={{ background: "#0f1a02", border: "1px solid rgba(190,242,100,0.2)", borderRadius: "12px", fontSize: "11px" }}
+                                  labelStyle={{ color: "#bef264", fontWeight: 700 }}
+                                  itemStyle={{ color: "#fff" }}
+                                  formatter={(value: number | undefined) => [`${value ?? 0}%`, "Health"]}
+                                />
                                 <Area
-                                  type="natural"
-                                  dataKey="momentum"
-                                  stroke="#bef264"
-                                  strokeWidth={6}
-                                  fill="url(#blobGradient)"
+                                  type="monotone"
+                                  dataKey="score"
+                                  stroke={trend >= 0 ? "#bef264" : "#f87171"}
+                                  strokeWidth={4}
+                                  fill="url(#healthTrendGradient)"
                                   fillOpacity={1}
-                                  dot={(props: any) => {
-                                    const { cx, cy, payload } = props;
-                                    // Only show pins on specific peaks for cleaner look
-                                    if (payload.id % 2 === 0) return null;
-                                    return (
-                                      <g key={payload.id} className="drop-shadow-xl">
-                                        <circle cx={cx} cy={cy - 12} r="10" fill="#bef264" />
-                                        <text x={cx} y={cy - 8.5} textAnchor="middle" fill="#1a2e05" fontSize="8" fontWeight="900">0{payload.id}</text>
-                                        <path d={`M${cx} ${cy - 2} L${cx - 3} ${cy - 10} L${cx + 3} ${cy - 10} Z`} fill="#bef264" />
-                                      </g>
-                                    );
-                                  }}
+                                  isAnimationActive={true}
+                                  animationDuration={1500}
+                                  dot={{ r: 4, fill: trend >= 0 ? "#bef264" : "#f87171", stroke: "#1a2e05", strokeWidth: 2 }}
+                                  activeDot={{ r: 6, fill: "#fff", stroke: trend >= 0 ? "#bef264" : "#f87171", strokeWidth: 2 }}
                                 />
                               </AreaChart>
                             </ResponsiveContainer>
                           </div>
 
-                          {/* Simplified Aesthetic Legend */}
-                          <div className="flex justify-center pb-8 mt-2 border-t border-white/5 pt-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-lime-400 shadow-[0_0_10px_rgba(190,242,100,0.5)]" />
-                              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Consolidated Momentum Index</span>
+                          <div className="flex justify-between items-center pb-6 mt-2 border-t border-white/5 pt-3 px-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${trend >= 0 ? 'bg-lime-400 shadow-[0_0_10px_rgba(190,242,100,0.5)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'}`} />
+                              <span className="text-[10px] font-black text-white uppercase tracking-[0.15em]">
+                                {trend > 5 ? "Improving" : trend < -5 ? "Declining" : "Stable"}
+                              </span>
                             </div>
+                            <span className="text-[22px] font-black text-white">{isNaN(currentScore) ? 0 : currentScore}<span className="text-[10px] text-white/40 ml-0.5">%</span></span>
                           </div>
                         </div>
                       </Card>

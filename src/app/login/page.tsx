@@ -47,10 +47,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-emerald-900 via-green-800 to-teal-900">
-        {/* Leaf SVG decorations */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-green-100/60">
+        {/* Leaf SVG decorations — dark & light greens */}
         <div className="absolute inset-0">
-          <svg className="absolute -top-10 -left-10 w-80 h-80 text-emerald-600/30 rotate-12" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute -top-10 -left-10 w-80 h-80 text-emerald-950/45 rotate-12" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
             <line x1="100" y1="190" x2="100" y2="10" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
             <line x1="100" y1="60" x2="60" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.2" />
@@ -60,32 +60,28 @@ export default function LoginPage() {
             <line x1="100" y1="90" x2="150" y2="80" stroke="currentColor" strokeWidth="1" opacity="0.2" />
             <line x1="100" y1="120" x2="145" y2="115" stroke="currentColor" strokeWidth="1" opacity="0.2" />
           </svg>
-          <svg className="absolute top-1/4 right-0 w-64 h-64 text-green-500/20 -rotate-45" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute top-1/4 right-0 w-64 h-64 text-emerald-900/40 -rotate-45" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          <svg className="absolute bottom-1/4 -left-8 w-56 h-56 text-teal-400/20 rotate-45" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute bottom-1/4 -left-8 w-56 h-56 text-emerald-950/35 rotate-45" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          <svg className="absolute -bottom-16 right-10 w-72 h-72 text-emerald-500/25 -rotate-12" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute -bottom-16 right-10 w-72 h-72 text-emerald-900/40 -rotate-12" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
             <line x1="100" y1="190" x2="100" y2="10" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
           </svg>
-          <svg className="absolute top-10 right-1/3 w-40 h-40 text-green-400/15 rotate-90" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute top-10 right-1/3 w-40 h-40 text-emerald-950/30 rotate-90" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          <svg className="absolute bottom-10 left-1/3 w-36 h-36 text-teal-300/15 -rotate-30" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute bottom-10 left-1/3 w-36 h-36 text-emerald-900/35 -rotate-30" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          <svg className="absolute top-1/2 left-16 w-20 h-20 text-green-300/20 rotate-180" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute top-1/2 left-16 w-20 h-20 text-emerald-950/40 rotate-180" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          <svg className="absolute top-16 left-1/2 w-24 h-24 text-emerald-300/15 rotate-60" viewBox="0 0 200 200" fill="currentColor">
+          <svg className="absolute top-16 left-1/2 w-24 h-24 text-emerald-900/35 rotate-60" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 10 C140 10, 190 50, 190 100 C190 150, 140 190, 100 190 C80 190, 60 170, 50 150 C30 110, 40 50, 100 10 Z" />
           </svg>
-          {/* Glowing orbs */}
-          <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-32 right-16 w-80 h-80 bg-teal-300/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-400/8 rounded-full blur-3xl" />
         </div>
 
         {/* Center: Logo — no pulse, just clean and big */}
@@ -93,26 +89,26 @@ export default function LoginPage() {
           <Image
             src="/greenPulse-logo.png"
             alt="GreenPulse Logo"
-            width={340}
-            height={340}
+            width={200}
+            height={200}
             className="drop-shadow-2xl"
             priority
           />
-          <h1 className="text-5xl font-bold text-white mt-4 tracking-tight drop-shadow-lg">
+          <h1 className="text-5xl font-bold text-emerald-800 mt-4 tracking-tight">
             GreenPulse
           </h1>
-          <span className="text-white/40 text-sm font-medium tracking-[0.25em] uppercase mt-3">
-            IoT Plant Monitor
+          <span className="text-emerald-600/60 text-sm font-medium tracking-[0.25em] uppercase mt-3">
+            Brings Your Plant To Life
           </span>
         </div>
 
         {/* Bottom: Welcome text */}
         <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
-            <h2 className="text-xl font-bold text-white mb-1">
+          <div className="bg-emerald-800/10 backdrop-blur-md rounded-2xl p-5 border border-emerald-700/15">
+            <h2 className="text-xl font-bold text-emerald-800 mb-1">
               Welcome to GreenPulse
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed">
+            <p className="text-emerald-700/60 text-sm leading-relaxed">
               Track your plant health with real-time sensor data, smart alerts, and beautiful visualizations.
             </p>
           </div>
@@ -121,9 +117,46 @@ export default function LoginPage() {
 
       {/* Right Panel - Login Form */}
       <div className="flex-1 flex items-center justify-center bg-[#fafbfc] px-6 relative overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-[0.02]">
-          <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #059669 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+        {/* Scattered leaf background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[
+            { top: "1%", left: "3%", size: 95, rotate: -25, opacity: 0.1 },
+            { top: "5%", left: "55%", size: 70, rotate: 140, opacity: 0.08 },
+            { top: "3%", left: "85%", size: 110, rotate: 45, opacity: 0.09 },
+            { top: "15%", left: "20%", size: 65, rotate: -70, opacity: 0.07 },
+            { top: "18%", left: "75%", size: 80, rotate: 130, opacity: 0.1 },
+            { top: "25%", left: "5%", size: 100, rotate: -60, opacity: 0.09 },
+            { top: "28%", left: "50%", size: 75, rotate: 200, opacity: 0.08 },
+            { top: "30%", left: "90%", size: 85, rotate: -15, opacity: 0.09 },
+            { top: "40%", left: "15%", size: 90, rotate: 95, opacity: 0.08 },
+            { top: "42%", left: "65%", size: 70, rotate: -150, opacity: 0.07 },
+            { top: "48%", left: "88%", size: 80, rotate: 80, opacity: 0.1 },
+            { top: "55%", left: "3%", size: 85, rotate: -40, opacity: 0.09 },
+            { top: "58%", left: "42%", size: 75, rotate: 170, opacity: 0.07 },
+            { top: "62%", left: "78%", size: 95, rotate: -110, opacity: 0.08 },
+            { top: "68%", left: "25%", size: 70, rotate: 55, opacity: 0.09 },
+            { top: "72%", left: "60%", size: 100, rotate: -30, opacity: 0.08 },
+            { top: "78%", left: "8%", size: 80, rotate: 210, opacity: 0.1 },
+            { top: "80%", left: "85%", size: 75, rotate: -90, opacity: 0.09 },
+            { top: "88%", left: "35%", size: 90, rotate: 160, opacity: 0.08 },
+            { top: "92%", left: "70%", size: 85, rotate: -50, opacity: 0.09 },
+            { top: "95%", left: "10%", size: 100, rotate: 120, opacity: 0.07 },
+          ].map((leaf, i) => (
+            <img
+              key={i}
+              src="/bg.png"
+              alt=""
+              className="absolute"
+              style={{
+                top: leaf.top,
+                left: leaf.left,
+                width: leaf.size,
+                height: leaf.size,
+                opacity: leaf.opacity,
+                transform: `rotate(${leaf.rotate}deg)`,
+              }}
+            />
+          ))}
         </div>
 
         <div className="w-full max-w-[440px] relative z-10">
