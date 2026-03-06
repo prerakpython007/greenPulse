@@ -254,9 +254,10 @@ export default function DashboardPage() {
     const cutoff = Date.now() - hours * 60 * 60 * 1000;
     const filtered = historyData.filter((d) => d.timestamp > cutoff);
 
-    // Downsample to max ~12-15 points for clean bars
+    // Downsample to max ~12 points for clean bars — sample from the end so previous points stay stable
     const targetPoints = 12;
-    const sampled = filtered.filter((_, i) => i % Math.max(1, Math.floor(filtered.length / targetPoints)) === 0).slice(-targetPoints);
+    const step = Math.max(1, Math.floor(filtered.length / targetPoints));
+    const sampled = filtered.filter((_, i, arr) => (arr.length - 1 - i) % step === 0).slice(-targetPoints);
 
     return sampled.map((d) => {
       const timeLabel = hours >= 168
