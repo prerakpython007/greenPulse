@@ -13,18 +13,22 @@ import {
   orderByChild,
   limitToLast,
 } from "firebase/database";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Thermometer,
   Droplets,
   Sprout,
   Bell,
-  Save,
+  Check,
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Loader2,
+  Leaf,
 } from "lucide-react";
 
 interface Thresholds {
@@ -65,7 +69,6 @@ export default function AlertsPage() {
     }
   }, [user, loading, router]);
 
-  // Load thresholds
   useEffect(() => {
     const thresholdRef = ref(db, "thresholds");
     const unsubscribe = onValue(thresholdRef, (snapshot) => {
@@ -77,7 +80,6 @@ export default function AlertsPage() {
     return () => unsubscribe();
   }, []);
 
-  // Load alerts
   useEffect(() => {
     const alertsRef = query(
       ref(db, "alerts"),
@@ -100,7 +102,6 @@ export default function AlertsPage() {
     return () => unsubscribe();
   }, []);
 
-  // Check sensor data against thresholds and generate alerts
   useEffect(() => {
     const sensorRef = query(
       ref(db, "sensorData"),
@@ -187,167 +188,263 @@ export default function AlertsPage() {
     return <Sprout className="w-4 h-4" />;
   };
 
-  const getAlertColor = (type: string) => {
-    if (type.includes("high")) return "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400";
-    return "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400";
+  const getAlertStyle = (type: string) => {
+    if (type.includes("high"))
+      return {
+        bg: "bg-red-50 border-red-100",
+        icon: "bg-red-100 text-red-600",
+        text: "text-red-800",
+        sub: "text-red-500",
+        badge: "bg-red-100 text-red-700",
+      };
+    return {
+      bg: "bg-blue-50 border-blue-100",
+      icon: "bg-blue-100 text-blue-600",
+      text: "text-blue-800",
+      sub: "text-blue-500",
+      badge: "bg-blue-100 text-blue-700",
+    };
+  };
+
+  const timeAgo = (timestamp: number) => {
+    const diff = Date.now() - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
   };
 
   if (loading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-xl">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-amber-50/30">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full h-9 w-9"
+              onClick={() => router.push("/dashboard")}
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-amber-500 to-orange-500 p-2 rounded-xl shadow-lg shadow-amber-200">
+                <Bell className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">Alerts</h1>
+                <p className="text-xs text-gray-400 -mt-0.5">Thresholds & History</p>
+              </div>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-orange-500" />
-            <h1 className="text-xl font-bold">Alerts & Thresholds</h1>
+            <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-2 rounded-xl shadow-lg shadow-emerald-200">
+              <Leaf className="w-4 h-4 text-white" />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {/* Threshold Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Save className="w-5 h-5" />
-              Alert Thresholds
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-red-600">
-                  <Thermometer className="w-4 h-4" />
-                  <span className="font-medium">Temperature</span>
-                </div>
-                <div className="space-y-2">
-                  <Label>High Threshold (°C)</Label>
-                  <Input
-                    type="number"
-                    value={thresholds.tempHigh}
-                    onChange={(e) =>
-                      setThresholds({ ...thresholds, tempHigh: Number(e.target.value) })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Low Threshold (°C)</Label>
-                  <Input
-                    type="number"
-                    value={thresholds.tempLow}
-                    onChange={(e) =>
-                      setThresholds({ ...thresholds, tempLow: Number(e.target.value) })
-                    }
-                  />
-                </div>
-              </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Alert Thresholds</h2>
+          <p className="text-sm text-gray-400 mb-5">Get notified when readings go beyond these limits</p>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-blue-600">
-                  <Droplets className="w-4 h-4" />
-                  <span className="font-medium">Humidity</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Temperature */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <div className="h-1.5 bg-gradient-to-r from-rose-500 to-orange-500" />
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-rose-100 p-2.5 rounded-xl">
+                    <Thermometer className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Temperature</span>
                 </div>
-                <div className="space-y-2">
-                  <Label>High Threshold (%)</Label>
-                  <Input
-                    type="number"
-                    value={thresholds.humHigh}
-                    onChange={(e) =>
-                      setThresholds({ ...thresholds, humHigh: Number(e.target.value) })
-                    }
-                  />
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                      <ArrowUp className="w-3 h-3 text-red-400" /> High Limit (°C)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={thresholds.tempHigh}
+                      onChange={(e) =>
+                        setThresholds({ ...thresholds, tempHigh: Number(e.target.value) })
+                      }
+                      className="h-10 rounded-xl bg-gray-50 border-gray-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                      <ArrowDown className="w-3 h-3 text-blue-400" /> Low Limit (°C)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={thresholds.tempLow}
+                      onChange={(e) =>
+                        setThresholds({ ...thresholds, tempLow: Number(e.target.value) })
+                      }
+                      className="h-10 rounded-xl bg-gray-50 border-gray-200"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Low Threshold (%)</Label>
-                  <Input
-                    type="number"
-                    value={thresholds.humLow}
-                    onChange={(e) =>
-                      setThresholds({ ...thresholds, humLow: Number(e.target.value) })
-                    }
-                  />
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-green-600">
-                  <Sprout className="w-4 h-4" />
-                  <span className="font-medium">Soil Moisture</span>
+            {/* Humidity */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500" />
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2.5 rounded-xl">
+                    <Droplets className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Humidity</span>
                 </div>
-                <div className="space-y-2">
-                  <Label>Low Threshold (%)</Label>
-                  <Input
-                    type="number"
-                    value={thresholds.moistLow}
-                    onChange={(e) =>
-                      setThresholds({ ...thresholds, moistLow: Number(e.target.value) })
-                    }
-                  />
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                      <ArrowUp className="w-3 h-3 text-red-400" /> High Limit (%)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={thresholds.humHigh}
+                      onChange={(e) =>
+                        setThresholds({ ...thresholds, humHigh: Number(e.target.value) })
+                      }
+                      className="h-10 rounded-xl bg-gray-50 border-gray-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                      <ArrowDown className="w-3 h-3 text-blue-400" /> Low Limit (%)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={thresholds.humLow}
+                      onChange={(e) =>
+                        setThresholds({ ...thresholds, humLow: Number(e.target.value) })
+                      }
+                      className="h-10 rounded-xl bg-gray-50 border-gray-200"
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="mt-6 flex items-center gap-3">
-              <Button onClick={saveThresholds} className="bg-green-600 hover:bg-green-700">
-                <Save className="w-4 h-4 mr-2" />
-                Save Thresholds
-              </Button>
-              {saved && (
-                <span className="text-green-600 text-sm font-medium">
-                  Thresholds saved!
-                </span>
+            {/* Moisture */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-green-500" />
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-100 p-2.5 rounded-xl">
+                    <Sprout className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Soil Moisture</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                      <ArrowDown className="w-3 h-3 text-blue-400" /> Low Limit (%)
+                    </Label>
+                    <Input
+                      type="number"
+                      value={thresholds.moistLow}
+                      onChange={(e) =>
+                        setThresholds({ ...thresholds, moistLow: Number(e.target.value) })
+                      }
+                      className="h-10 rounded-xl bg-gray-50 border-gray-200"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Alert when soil gets too dry for your plants
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-5">
+            <Button
+              onClick={saveThresholds}
+              className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-emerald-200 transition-all duration-200"
+            >
+              {saved ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Saved!
+                </>
+              ) : (
+                "Save Thresholds"
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </Button>
+          </div>
+        </div>
 
         {/* Alert History */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Alert History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {alerts.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No alerts yet. Alerts will appear here when sensor readings exceed your thresholds.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {alerts.map((alert) => (
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Alert History</h2>
+          <p className="text-sm text-gray-400 mb-5">Recent threshold violations</p>
+
+          {alerts.length === 0 ? (
+            <Card className="border-0 shadow-lg">
+              <CardContent className="flex flex-col items-center justify-center py-16 space-y-3">
+                <div className="bg-gray-100 p-4 rounded-full">
+                  <Bell className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-gray-500 font-medium">No alerts yet</p>
+                <p className="text-sm text-gray-400 max-w-xs text-center">
+                  Alerts will appear here when sensor readings cross your thresholds
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {alerts.map((alert) => {
+                const style = getAlertStyle(alert.type);
+                return (
                   <div
                     key={alert.id}
-                    className={`flex items-center justify-between p-3 rounded-lg ${getAlertColor(alert.type)}`}
+                    className={`flex items-center gap-4 p-4 rounded-2xl border ${style.bg} transition-all duration-200 hover:shadow-md`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-xl ${style.icon}`}>
                       {getAlertIcon(alert.type)}
-                      <div>
-                        <p className="font-medium text-sm">{alert.message}</p>
-                        <p className="text-xs opacity-75">
-                          Value: {alert.value} |{" "}
-                          {new Date(alert.timestamp).toLocaleString()}
-                        </p>
-                      </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {alert.type.includes("high") ? "HIGH" : "LOW"}
-                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${style.text}`}>
+                        {alert.message}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${style.sub}`}>
+                        Reading: {alert.value} · {timeAgo(alert.timestamp)}
+                      </p>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${style.badge} flex items-center gap-1`}>
+                      {alert.type.includes("high") ? (
+                        <><AlertTriangle className="w-3 h-3" /> HIGH</>
+                      ) : (
+                        <><ArrowDown className="w-3 h-3" /> LOW</>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
