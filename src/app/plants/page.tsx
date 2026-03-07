@@ -92,61 +92,60 @@ export default function PlantsPage() {
             onClick={() => router.push("/dashboard")}
             className="group text-left"
           >
-            <div className="bg-[#1a3a2a] rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-emerald-900/20 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-active:scale-[0.97]">
+            <div className="bg-emerald-50 border-2 border-emerald-100 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-active:scale-[0.97]">
               {/* Plant Image Area */}
-              <div className="relative h-44 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-[#1a3a2a]" />
-                <div className="absolute -right-6 -top-6 w-36 h-36 bg-emerald-500/15 rounded-full blur-3xl" />
-                <div className="absolute -left-6 -bottom-6 w-28 h-28 bg-lime-400/10 rounded-full blur-2xl" />
+              <div className="relative h-52 overflow-hidden bg-emerald-100/50">
+                <div className="absolute -right-8 -top-8 w-40 h-40 bg-emerald-300/20 rounded-full blur-3xl" />
+                <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-lime-300/15 rounded-full blur-2xl" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center">
-                    <Image src="/mascot.png" alt="Plant" width={64} height={64} className="rounded-2xl drop-shadow-lg" />
+                  <div className="w-32 h-32 rounded-3xl bg-white/60 backdrop-blur-sm border-2 border-emerald-200/50 flex items-center justify-center shadow-lg">
+                    <Image src="/mascot.png" alt="Plant" width={90} height={90} className="rounded-2xl drop-shadow-lg" />
                   </div>
                 </div>
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
                   {boardConnected ? (
-                    <div className="flex items-center gap-1.5 bg-emerald-500/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-400/20">
+                    <div className="flex items-center gap-1.5 bg-emerald-500 px-3 py-1.5 rounded-full shadow-md">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
                       </span>
-                      <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Live</span>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Live</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 bg-red-500/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-red-400/20">
-                      <WifiOff className="w-3 h-3 text-red-400" />
-                      <span className="text-[10px] font-bold text-red-300 uppercase tracking-wider">Offline</span>
+                    <div className="flex items-center gap-1.5 bg-red-500 px-3 py-1.5 rounded-full shadow-md">
+                      <WifiOff className="w-3 h-3 text-white" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Offline</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Card Info */}
-              <div className="p-5">
+              <div className="p-5 bg-white">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h2 className="text-lg font-black text-white">My Indoor Plant</h2>
-                    <p className="text-[11px] text-white/30 font-medium">{boardName}</p>
+                    <h2 className="text-lg font-black text-gray-900">My Indoor Plant</h2>
+                    <p className="text-[11px] text-gray-400 font-medium">{boardName}</p>
                   </div>
-                  <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-[#1a3a2a] flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
                     <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:text-white transition-colors" />
                   </div>
                 </div>
 
                 {/* Sensor Pills */}
                 <div className="flex gap-2">
-                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
-                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Temp</span>
-                    <span className="text-xs font-black text-rose-400">🌡</span>
+                  <div className="flex-1 bg-rose-50 rounded-xl px-3 py-2 text-center border border-rose-100">
+                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Temp</span>
+                    <span className="text-sm">🌡</span>
                   </div>
-                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
-                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Humid</span>
-                    <span className="text-xs font-black text-blue-400">💧</span>
+                  <div className="flex-1 bg-blue-50 rounded-xl px-3 py-2 text-center border border-blue-100">
+                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Humid</span>
+                    <span className="text-sm">💧</span>
                   </div>
-                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
-                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Soil</span>
-                    <span className="text-xs font-black text-emerald-400">🌱</span>
+                  <div className="flex-1 bg-emerald-50 rounded-xl px-3 py-2 text-center border border-emerald-100">
+                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Soil</span>
+                    <span className="text-sm">🌱</span>
                   </div>
                 </div>
               </div>
