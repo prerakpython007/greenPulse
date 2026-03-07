@@ -68,96 +68,102 @@ export default function PlantsPage() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
-        {/* Logo */}
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <Image src="/greenPulse-logo.png" alt="GreenPulse" width={64} height={90} className="drop-shadow-[0_0_20px_rgba(52,211,153,0.3)]" />
-          <div className="text-center">
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-              Green<span className="text-emerald-600">Pulse</span>
-            </h1>
-            <p className="text-sm text-gray-400 font-medium mt-1">Select your plant to continue</p>
+      <div className="relative z-10 p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <Image src="/greenPulse-logo.png" alt="GreenPulse" width={48} height={68} className="drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]" />
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+                Green<span className="text-emerald-600">Pulse</span>
+              </h1>
+              <p className="text-xs text-gray-400 font-medium">Select a plant to monitor</p>
+            </div>
           </div>
+          <p className="text-xs text-gray-400 font-medium">
+            <span className="text-gray-600 font-bold">{user?.email}</span>
+          </p>
         </div>
 
-        {/* Plant Card */}
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="w-full max-w-md group"
-        >
-          <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg hover:shadow-xl hover:border-emerald-200 transition-all duration-300 overflow-hidden group-hover:scale-[1.02] group-active:scale-[0.98]">
-            {/* Card Header */}
-            <div className="bg-[#1a3a2a] p-5 flex items-center gap-4 relative overflow-hidden">
-              <div className="absolute inset-0 bg-emerald-500/5" />
-              <div className="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
-              <div className="relative w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                <Image src="/mascot.png" alt="Plant" width={40} height={40} className="rounded-xl" />
-              </div>
-              <div className="relative flex-1">
-                <h2 className="text-lg font-black text-white">My Indoor Plant</h2>
-                <p className="text-xs text-white/40 font-medium">{boardName}</p>
-              </div>
-              <div className="relative">
-                {boardConnected ? (
-                  <div className="flex items-center gap-1.5 bg-emerald-500/20 px-3 py-1.5 rounded-full">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 bg-red-500/20 px-3 py-1.5 rounded-full">
-                    <WifiOff className="w-3 h-3 text-red-400" />
-                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Offline</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Card Body */}
-            <div className="p-5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-1">
-                  <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center border-2 border-white">
-                    <span className="text-xs">🌡</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center border-2 border-white">
-                    <span className="text-xs">💧</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center border-2 border-white">
-                    <span className="text-xs">🌱</span>
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {/* Plant Card */}
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="group text-left"
+          >
+            <div className="bg-[#1a3a2a] rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-emerald-900/20 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-active:scale-[0.97]">
+              {/* Plant Image Area */}
+              <div className="relative h-44 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-[#1a3a2a]" />
+                <div className="absolute -right-6 -top-6 w-36 h-36 bg-emerald-500/15 rounded-full blur-3xl" />
+                <div className="absolute -left-6 -bottom-6 w-28 h-28 bg-lime-400/10 rounded-full blur-2xl" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center">
+                    <Image src="/mascot.png" alt="Plant" width={64} height={64} className="rounded-2xl drop-shadow-lg" />
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">3 Sensors Active</p>
-                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Temperature, Humidity, Moisture</p>
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4">
+                  {boardConnected ? (
+                    <div className="flex items-center gap-1.5 bg-emerald-500/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-400/20">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Live</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 bg-red-500/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-red-400/20">
+                      <WifiOff className="w-3 h-3 text-red-400" />
+                      <span className="text-[10px] font-bold text-red-300 uppercase tracking-wider">Offline</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-[#1a3a2a] flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
-                <ChevronRight className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
+
+              {/* Card Info */}
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-white">My Indoor Plant</h2>
+                    <p className="text-[11px] text-white/30 font-medium">{boardName}</p>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                    <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:text-white transition-colors" />
+                  </div>
+                </div>
+
+                {/* Sensor Pills */}
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
+                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Temp</span>
+                    <span className="text-xs font-black text-rose-400">🌡</span>
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
+                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Humid</span>
+                    <span className="text-xs font-black text-blue-400">💧</span>
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded-xl px-3 py-2 text-center border border-white/5">
+                    <span className="text-[10px] block text-white/30 font-bold uppercase tracking-wider">Soil</span>
+                    <span className="text-xs font-black text-emerald-400">🌱</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </button>
+          </button>
 
-        {/* Add Plant Button (disabled/coming soon) */}
-        <div className="mt-4 w-full max-w-md">
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl p-4 flex items-center justify-center gap-3 opacity-40">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <Sprout className="w-5 h-5 text-gray-400" />
+          {/* Add Plant Card */}
+          <div className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 min-h-[300px] opacity-40 cursor-not-allowed">
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <Sprout className="w-7 h-7 text-gray-300" />
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-400">Add Another Plant</p>
+            <div className="text-center">
+              <p className="text-sm font-bold text-gray-400">Add Plant</p>
               <p className="text-[10px] text-gray-300 uppercase tracking-wider font-medium">Coming Soon</p>
             </div>
           </div>
         </div>
-
-        {/* User info */}
-        <p className="mt-8 text-xs text-gray-400 font-medium">
-          Signed in as <span className="text-gray-600 font-bold">{user?.email}</span>
-        </p>
       </div>
     </div>
   );
