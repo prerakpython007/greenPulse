@@ -22,6 +22,7 @@ import {
   Sprout,
   Sun as LucideSun,
   Bell,
+  SlidersHorizontal,
   MessageSquare,
   ChevronDown,
   User as UserIcon,
@@ -432,6 +433,10 @@ export default function DashboardPage() {
                   <button onClick={() => router.push("/notifications")} className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-500 hover:text-emerald-500 hover:border-emerald-100 hover:shadow-md transition-all relative">
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                  </button>
+
+                  <button onClick={() => router.push("/thresholds")} className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-500 hover:text-emerald-500 hover:border-emerald-100 hover:shadow-md transition-all">
+                    <SlidersHorizontal className="w-5 h-5" />
                   </button>
                 </div>
 
