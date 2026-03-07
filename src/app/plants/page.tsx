@@ -92,75 +92,38 @@ export default function PlantsPage() {
             onClick={() => router.push("/dashboard")}
             className="group text-left"
           >
-            <div className="bg-emerald-50 border-2 border-emerald-100 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-active:scale-[0.97]">
-              {/* Plant Image Area */}
-              <div className="relative h-52 overflow-hidden bg-emerald-100/50">
-                <div className="absolute -right-8 -top-8 w-40 h-40 bg-emerald-300/20 rounded-full blur-3xl" />
-                <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-lime-300/15 rounded-full blur-2xl" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 rounded-3xl bg-white/60 backdrop-blur-sm border-2 border-emerald-200/50 flex items-center justify-center shadow-lg">
-                    <Image src="/mascot.png" alt="Plant" width={90} height={90} className="rounded-2xl drop-shadow-lg" />
-                  </div>
-                </div>
-                {/* Status Badge */}
-                <div className="absolute top-4 right-4">
-                  {boardConnected ? (
-                    <div className="flex items-center gap-1.5 bg-emerald-500 px-3 py-1.5 rounded-full shadow-md">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                      </span>
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Live</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 bg-red-500 px-3 py-1.5 rounded-full shadow-md">
-                      <WifiOff className="w-3 h-3 text-white" />
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Offline</span>
-                    </div>
-                  )}
-                </div>
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-emerald-300 transition-colors">
+              <div className="bg-emerald-50 p-6 flex items-center justify-center">
+                <Image src="/mascot.png" alt="Plant" width={100} height={100} className="rounded-xl" />
               </div>
-
-              {/* Card Info */}
-              <div className="p-5 bg-white">
+              <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h2 className="text-lg font-black text-gray-900">My Indoor Plant</h2>
-                    <p className="text-[11px] text-gray-400 font-medium">{boardName}</p>
+                    <h2 className="text-base font-bold text-gray-900">My Indoor Plant</h2>
+                    <p className="text-[11px] text-gray-400">{boardName}</p>
                   </div>
-                  <div className="w-9 h-9 rounded-xl bg-[#1a3a2a] flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                    <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:text-white transition-colors" />
-                  </div>
+                  {boardConnected ? (
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Live</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Offline</span>
+                  )}
                 </div>
-
-                {/* Sensor Pills */}
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-rose-50 rounded-xl px-3 py-2 text-center border border-rose-100">
-                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Temp</span>
-                    <span className="text-sm">🌡</span>
-                  </div>
-                  <div className="flex-1 bg-blue-50 rounded-xl px-3 py-2 text-center border border-blue-100">
-                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Humid</span>
-                    <span className="text-sm">💧</span>
-                  </div>
-                  <div className="flex-1 bg-emerald-50 rounded-xl px-3 py-2 text-center border border-emerald-100">
-                    <span className="text-[10px] block text-gray-400 font-bold uppercase tracking-wider">Soil</span>
-                    <span className="text-sm">🌱</span>
-                  </div>
+                <div className="flex gap-2 text-[10px] text-gray-400 font-medium">
+                  <span>🌡 Temp</span>
+                  <span>·</span>
+                  <span>💧 Humid</span>
+                  <span>·</span>
+                  <span>🌱 Soil</span>
                 </div>
               </div>
             </div>
           </button>
 
           {/* Add Plant Card */}
-          <div className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 min-h-[300px] opacity-40 cursor-not-allowed">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Sprout className="w-7 h-7 text-gray-300" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-gray-400">Add Plant</p>
-              <p className="text-[10px] text-gray-300 uppercase tracking-wider font-medium">Coming Soon</p>
-            </div>
+          <div className="rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 min-h-[250px] opacity-40 cursor-not-allowed">
+            <Sprout className="w-6 h-6 text-gray-300" />
+            <p className="text-xs font-medium text-gray-400">Add Plant</p>
+            <p className="text-[10px] text-gray-300">Coming Soon</p>
           </div>
         </div>
       </div>
