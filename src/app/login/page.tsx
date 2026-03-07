@@ -34,7 +34,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push("/dashboard");
+      router.push("/plants");
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
